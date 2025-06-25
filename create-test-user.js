@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+require('dotenv').config();
 
-// MongoDB connection string - replace with your actual connection string
-const MONGODB_URI = 'mongodb+srv://surveyPopup:surveyPopup%40123@cluster0.mongodb.net/surveyPopup?retryWrites=true&w=majority';
+// MongoDB connection string - now from environment variable
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function createTestUser() {
   try {
