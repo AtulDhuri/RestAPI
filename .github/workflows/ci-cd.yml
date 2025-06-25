@@ -2,9 +2,9 @@ name: Node.js CI/CD
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, qa, dev ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, qa, dev ]
 
 jobs:
   test:
@@ -43,17 +43,30 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/master' ||
+      github.ref == 'refs/heads/qa' ||
+      github.ref == 'refs/heads/dev'
     
     steps:
-    - name: Deploy to AWS
+    - name: Deploy to AWS (main)
+      if: github.ref == 'refs/heads/main'
       run: |
-        echo "Deploying to AWS..."
-        # Add your deployment commands here
-        # Example: SSH to your AWS instance and pull latest code
-        # ssh -o StrictHostKeyChecking=no ${{ secrets.AWS_USER }}@${{ secrets.AWS_HOST }} "
-        #   cd /path/to/your/app &&
-        #   git pull origin master &&
-        #   npm install &&
-        #   pm2 restart your-app-name
-        # " 
+        echo "Deploying MAIN branch to AWS..."
+        # ssh ... git pull origin main ...
+    - name: Deploy to AWS (master)
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo "Deploying MASTER branch to AWS..."
+        # ssh ... git pull origin master ...
+    - name: Deploy to AWS (qa)
+      if: github.ref == 'refs/heads/qa'
+      run: |
+        echo "Deploying QA branch to AWS..."
+        # ssh ... git pull origin qa ...
+    - name: Deploy to AWS (dev)
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        echo "Deploying DEV branch to AWS..."
+        # ssh ... git pull origin dev ... 
