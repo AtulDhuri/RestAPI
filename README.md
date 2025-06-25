@@ -350,4 +350,4 @@ This project is licensed under the ISC License.
 
 ## 🆘 Support
 
-For support and questions, please contact the development team or create an issue in the repository. 
+For support and questions, please contact the development team or create an issue in the repository.
