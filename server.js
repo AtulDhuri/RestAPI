@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
-    message: 'Property Customer API is running',
+    message: 'Property Customer API is running on server',
     timestamp: new Date().toISOString()
   });
 });
