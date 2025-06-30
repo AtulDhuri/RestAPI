@@ -91,19 +91,22 @@ const addRemarkToCustomer = async (req, res) => {
     if (!remark || !attendedBy) {
       return res.status(400).json({ success: false, message: 'Remark and attendedBy are required' });
     }
-    const update = {
-      $push: {
-        remarks: {
-          remark,
-          attendedBy,
-          visitDate: visitDate ? new Date(visitDate) : new Date()
-        }
-      }
-    };
-    const customer = await Customer.findByIdAndUpdate(id, update, { new: true });
+    // Find customer and add remark using save() to trigger pre-save middleware
+    const customer = await Customer.findById(id);
     if (!customer) {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
+    
+    // Add new remark
+    customer.remarks.push({
+      remark,
+      attendedBy,
+      visitDate: visitDate ? new Date(visitDate) : new Date()
+    });
+    
+    // Save to trigger pre-save middleware (recalculates clientRating)
+    await customer.save();
+    
     res.status(200).json({ success: true, message: 'Remark added successfully', data: customer });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to add remark', error: error.message });
@@ -118,10 +121,18 @@ const updateCustomer = async (req, res) => {
     const { id } = req.params;
     // Exclude mobile and _id from update
     const { mobile, _id, ...updateFields } = req.body;
-    const customer = await Customer.findByIdAndUpdate(id, updateFields, { new: true, runValidators: true });
+    // Find customer and update using save() to trigger pre-save middleware
+    const customer = await Customer.findById(id);
     if (!customer) {
       return res.status(404).json({ success: false, message: 'Customer not found' });
     }
+    
+    // Update fields
+    Object.assign(customer, updateFields);
+    
+    // Save to trigger pre-save middleware (recalculates clientRating)
+    await customer.save();
+    
     res.status(200).json({ success: true, message: 'Customer updated successfully', data: customer });
   } catch (error) {
     if (error.name === 'ValidationError') {

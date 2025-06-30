@@ -1,10 +1,10 @@
 const express = require('express');
-const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
 const connectDB = require('./utils/database');
+const corsMiddleware = require('./middleware/cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,10 +16,7 @@ const userRoutes = require('./routes/user');
 
 // Middleware
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
-  credentials: true
-}));
+app.use(corsMiddleware);
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

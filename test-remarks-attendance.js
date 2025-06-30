@@ -32,11 +32,13 @@ const testCustomerData = {
   remarks: [
     {
       remark: 'Customer visited for the first time and showed interest in 1 BHK apartments. Discussed budget and location preferences.',
+      rating: 8,
       attendedBy: 'Sarah Johnson',
       visitDate: new Date().toISOString()
     },
     {
       remark: 'Follow-up visit to show property samples. Customer was satisfied with the options presented.',
+      rating: 9,
       attendedBy: 'Mike Wilson',
       visitDate: new Date().toISOString()
     }
@@ -129,9 +131,14 @@ async function testCustomerRetrieval(customerId) {
       customer.remarks.forEach((record, index) => {
         console.log(`  Record ${index + 1}:`);
         console.log(`    Remark: ${record.remark}`);
+        console.log(`    Rating: ${record.rating}/10`);
         console.log(`    Attended by: ${record.attendedBy}`);
         console.log(`    Visit date: ${record.visitDate}`);
       });
+      
+      if (customer.clientRating) {
+        console.log(`\n✅ Client Rating: ${customer.clientRating}/5`);
+      }
     }
     
   } catch (error) {
@@ -188,12 +195,30 @@ async function testValidationErrors() {
     }
   }
   
-  // Test with missing attendedBy
+  // Test with missing rating
   const invalidData3 = { ...testCustomerData };
-  invalidData3.remarks[0].attendedBy = '';
+  delete invalidData3.remarks[0].rating;
   
   try {
     await axios.post(`${API_BASE_URL}/customer`, invalidData3, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    console.log('❌ Should have failed - missing rating');
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      console.log('✅ Correctly rejected - missing rating');
+    }
+  }
+  
+  // Test with missing attendedBy
+  const invalidData4 = { ...testCustomerData };
+  invalidData4.remarks[0].attendedBy = '';
+  
+  try {
+    await axios.post(`${API_BASE_URL}/customer`, invalidData4, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`
@@ -206,12 +231,30 @@ async function testValidationErrors() {
     }
   }
   
-  // Test with short remark
-  const invalidData4 = { ...testCustomerData };
-  invalidData4.remarks[0].remark = 'Short';
+  // Test with invalid rating
+  const invalidData5 = { ...testCustomerData };
+  invalidData5.remarks[0].rating = 11;
   
   try {
-    await axios.post(`${API_BASE_URL}/customer`, invalidData4, {
+    await axios.post(`${API_BASE_URL}/customer`, invalidData5, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+    console.log('❌ Should have failed - rating out of range');
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      console.log('✅ Correctly rejected - rating out of range');
+    }
+  }
+  
+  // Test with short remark
+  const invalidData6 = { ...testCustomerData };
+  invalidData6.remarks[0].remark = 'Short';
+  
+  try {
+    await axios.post(`${API_BASE_URL}/customer`, invalidData6, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`
