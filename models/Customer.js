@@ -86,10 +86,18 @@ const customerSchema = new mongoose.Schema({
   referencePerson: {
     type: String,
     trim: true,
-    minlength: [2, 'Reference person name must be at least 2 characters'],
     maxlength: [100, 'Reference person name cannot exceed 100 characters'],
     required: function() {
       return this.reference === 'friend' || this.reference === 'agent';
+    },
+    validate: {
+      validator: function(value) {
+        if (this.reference === 'friend' || this.reference === 'agent') {
+          return value && value.length >= 2;
+        }
+        return true;
+      },
+      message: 'Reference person name must be at least 2 characters'
     }
   },
 
