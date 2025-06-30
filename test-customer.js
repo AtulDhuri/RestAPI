@@ -24,6 +24,7 @@ const testCustomer = {
   remarks: [
     {
       remark: "Customer showed interest in 2 BHK properties. Budget seems reasonable for the area.",
+      rating: 7,
       attendedBy: "Sarah Johnson",
       visitDate: new Date().toISOString()
     }

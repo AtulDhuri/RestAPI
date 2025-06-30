@@ -135,6 +135,12 @@ const customerSchema = new mongoose.Schema({
         minlength: [10, 'Remark must be at least 10 characters'],
         maxlength: [1000, 'Remark cannot exceed 1000 characters']
       },
+      rating: {
+        type: Number,
+        required: [true, 'Rating is required'],
+        min: [1, 'Rating must be at least 1'],
+        max: [10, 'Rating cannot exceed 10']
+      },
       attendedBy: {
         type: String,
         required: [true, 'Attended by is required'],
@@ -154,6 +160,13 @@ const customerSchema = new mongoose.Schema({
       },
       message: 'At least one remark and attendance record is required'
     }
+  },
+
+  // Client Rating (calculated from remarks ratings)
+  clientRating: {
+    type: Number,
+    min: [1, 'Client rating must be at least 1'],
+    max: [10, 'Client rating cannot exceed 10']
   },
 
   // Metadata
@@ -197,7 +210,7 @@ customerSchema.virtual('selectedInterests').get(function() {
   return interests;
 });
 
-// Pre-save middleware to handle null values and update updatedAt
+// Pre-save middleware to handle null values, calculate client rating, and update updatedAt
 customerSchema.pre('save', function(next) {
   // Convert null values to false in propertyInterests
   if (this.propertyInterests) {
@@ -207,6 +220,13 @@ customerSchema.pre('save', function(next) {
         this.propertyInterests[interest] = false;
       }
     });
+  }
+  
+  // Calculate client rating as average of all remark ratings (out of 10)
+  if (this.remarks && this.remarks.length > 0) {
+    const totalRating = this.remarks.reduce((sum, remark) => sum + remark.rating, 0);
+    const averageRating = totalRating / this.remarks.length;
+    this.clientRating = Math.round(averageRating); // Round to whole number (1-10 scale)
   }
   
   this.updatedAt = new Date();
